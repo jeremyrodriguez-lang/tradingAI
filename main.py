@@ -3,7 +3,7 @@ import ccxt
 
 app = FastAPI()
 
-# Configuramos Binance para usar el dominio de datos alternativo
+# Configuramos Binance para usar el dominio de datos alternativo que suele evitar el bloqueo 451
 exchange = ccxt.binance({
     'urls': {
         'api': {
@@ -19,7 +19,8 @@ def home():
 @app.get("/market-data")
 def get_crypto_data(symbol: str = "BTC/USDT"):
     try:
-        # Usamos fetch_ticker que es una llamada pública
+        # Forzamos la carga de mercados para asegurar la conexión
+        exchange.load_markets()
         ticker = exchange.fetch_ticker(symbol)
         return {
             "symbol": symbol,
@@ -29,4 +30,4 @@ def get_crypto_data(symbol: str = "BTC/USDT"):
             "change_24h": ticker['percentage']
         }
     except Exception as e:
-        return {"error": f"Binance sigue bloqueando: {str(e)}"}
+        return {"error": f"Intento fallido con dominio de datos: {str(e)}"}
