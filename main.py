@@ -3,24 +3,17 @@ import ccxt
 
 app = FastAPI()
 
-# Configuramos Binance para usar el dominio de datos alternativo que suele evitar el bloqueo 451
-exchange = ccxt.binance({
-    'urls': {
-        'api': {
-            'public': 'https://data.binance.com/api/v3',
-        }
-    }
-})
+# Bybit tiene una infraestructura muy amigable con servidores en la nube
+exchange = ccxt.bybit()
 
 @app.get("/")
 def home():
-    return {"status": "Conectado a Binance Data Stream"}
+    return {"status": "Conectado a Bybit Data Stream (BTC/USDT)"}
 
 @app.get("/market-data")
 def get_crypto_data(symbol: str = "BTC/USDT"):
     try:
-        # Forzamos la carga de mercados para asegurar la conexión
-        exchange.load_markets()
+        # Obtenemos el ticker (precio actual y variaciones)
         ticker = exchange.fetch_ticker(symbol)
         return {
             "symbol": symbol,
@@ -30,4 +23,4 @@ def get_crypto_data(symbol: str = "BTC/USDT"):
             "change_24h": ticker['percentage']
         }
     except Exception as e:
-        return {"error": f"Intento fallido con dominio de datos: {str(e)}"}
+        return {"error": f"Fallo en Bybit: {str(e)}"}
