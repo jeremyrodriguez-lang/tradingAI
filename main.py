@@ -2,15 +2,24 @@ from fastapi import FastAPI
 import ccxt
 
 app = FastAPI()
-exchange = ccxt.binance()
+
+# Configuramos Binance para usar el dominio de datos alternativo
+exchange = ccxt.binance({
+    'urls': {
+        'api': {
+            'public': 'https://data.binance.com/api/v3',
+        }
+    }
+})
 
 @app.get("/")
 def home():
-    return {"status": "Agente de Trading Conectado", "market": "Bitcoin"}
+    return {"status": "Conectado a Binance Data Stream"}
 
 @app.get("/market-data")
 def get_crypto_data(symbol: str = "BTC/USDT"):
     try:
+        # Usamos fetch_ticker que es una llamada pública
         ticker = exchange.fetch_ticker(symbol)
         return {
             "symbol": symbol,
@@ -20,4 +29,4 @@ def get_crypto_data(symbol: str = "BTC/USDT"):
             "change_24h": ticker['percentage']
         }
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": f"Binance sigue bloqueando: {str(e)}"}
